@@ -37,13 +37,11 @@ services:
     restart: unless-stopped
   mal_list_downloader:
     image: "ghcr.io/santerihetekivi/mal_list_downloader:master"
-    container_name: "mal_list_downloader"
-    env_file:
-      - .env
+    command: node /app/start.js
     volumes:
-      - "mal_list_downloader:/app/data"
-    command:
-      - "node /app/start.js"
+      - mal_list_downloader:/app/data
+    env_file:
+      - ./.env
   db:
     image: "postgres:13.3-buster"
     container_name: "db"
