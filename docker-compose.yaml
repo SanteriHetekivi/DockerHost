@@ -1,0 +1,128 @@
+version: "3.9"
+services:
+  traefik:
+    image: "traefik:v2.4.12"
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    extra_hosts:
+      - host.docker.internal:172.17.0.1
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    restart: unless-stopped
+  pihole:
+    image: "pihole/pihole:v5.8.1"
+    container_name: "pihole"
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    environment:
+      - TZ=Europe/Helsinki
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pihole.rule=Host(`pihole.localhost`)"
+      - "traefik.http.routers.pihole.entrypoints=web"
+      - "traefik.http.services.pihole.loadbalancer.server.port=80"
+    volumes:
+      - "pihole:/etc/pihole/"
+      - "pihole_dnsmasq:/etc/dnsmasq.d/"
+    depends_on:
+      - "traefik"
+    restart: unless-stopped
+  mal_list_downloader:
+    image: "santerihetekivi/mal_list_downloader:latest"
+    container_name: "mal_list_downloader"
+    env_file:
+      - .env
+    volumes:
+      - "mal_list_downloader:/app/data/"
+    command:
+      - "node /app/start.js"
+  db:
+    image: "postgres:13.3-buster"
+    container_name: "db"
+    environment:
+      - TZ=Europe/Helsinki
+      - POSTGRES_HOST_AUTH_METHOD=trust
+      - PGID=1020
+      - PUID=1020
+    volumes:
+      - "hetekivi_postgresql:/var/lib/postgresql/data/"
+  hetekivi.com:
+    image: "santerihetekivi/hetekivi.com:latest"
+    container_name: "hetekivi.com"
+    environment:
+      - TZ=Europe/Helsinki
+      - PGID=1020
+      - PUID=1020
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hetekivi.rule=Host(`hetekivi.localhost`)"
+      - "traefik.http.routers.hetekivi.entrypoints=web"
+      - "traefik.http.services.hetekivi.loadbalancer.server.port=8000"
+    volumes:
+      - "hetekivi_web:/data/"
+      - "hetekivi_tmp:/tmp/"
+    depends_on:
+      - "traefik"
+      - "db"
+    restart: unless-stopped
+  homeassistant:
+    image: "ghcr.io/home-assistant/home-assistant:2021.7.4"
+    container_name: "homeassistant"
+    environment:
+      - TZ=Europe/Helsinki
+    privileged: true      
+    network_mode: host
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.homeassistant.rule=Host(`homeassistant.localhost`)"
+      - "traefik.http.routers.homeassistant.entrypoints=web"
+      - "traefik.http.services.homeassistant.loadbalancer.server.port=8123"
+    volumes:
+      - "homeassistant:/config"
+    depends_on:
+      - "traefik"
+    restart: unless-stopped
+volumes:
+  mal_list_downloader:
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.0.10,nolock,soft,rw"
+      device: ":/mnt/HDD_4T_CH_120G/rancher/mal_list_downloader"
+  hetekivi_postgresql:
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.0.10,nolock,soft,rw"
+      device: ":/mnt/HDD_4T_CH_120G/rancher/hetekivi/postgresql"
+  hetekivi_tmp:
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.0.10,nolock,soft,rw"
+      device: ":/mnt/HDD_4T_CH_120G/rancher/hetekivi/tmp"
+  hetekivi_web:
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.0.10,nolock,soft,rw"
+      device: ":/mnt/HDD_4T_CH_120G/rancher/hetekivi/web"
+  pihole:
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.0.10,nolock,soft,rw"
+      device: ":/mnt/HDD_4T_CH_120G/rancher/pihole/etc-pihole"
+  pihole_dnsmasq:
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.0.10,nolock,soft,rw"
+      device: ":/mnt/HDD_4T_CH_120G/rancher/pihole/etc-dnsmasq.d"
+  homeassistant:
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.0.10,nolock,soft,rw"
+      device: ":/mnt/HDD_4T_CH_120G/rancher/homeassistant"
