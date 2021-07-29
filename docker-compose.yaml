@@ -41,7 +41,7 @@ services:
     env_file:
       - .env
     volumes:
-      - "mal_list_downloader:/app/data/"
+      - "mal_list_downloader:/app/data"
     command:
       - "node /app/start.js"
   db:
