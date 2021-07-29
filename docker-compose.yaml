@@ -36,7 +36,7 @@ services:
       - "traefik"
     restart: unless-stopped
   mal_list_downloader:
-    image: "santerihetekivi/mal_list_downloader:latest"
+    image: "ghcr.io/santerihetekivi/mal_list_downloader:master"
     container_name: "mal_list_downloader"
     env_file:
       - .env
