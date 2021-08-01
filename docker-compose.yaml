@@ -37,6 +37,7 @@ services:
     restart: unless-stopped
   mal_list_downloader:
     image: "ghcr.io/santerihetekivi/mal_list_downloader:master"
+    container_name: mal_list_downloader
     command: node /app/start.js
     volumes:
       - mal_list_downloader:/app/data
