@@ -76,7 +76,7 @@ services:
     container_name: "homeassistant"
     environment:
       - TZ=Europe/Helsinki
-    privileged: true      
+    privileged: true
     network_mode: host
     labels:
       - "traefik.enable=true"
@@ -87,6 +87,22 @@ services:
       - "homeassistant:/config"
     depends_on:
       - "traefik"
+    restart: unless-stopped
+  openvpn:
+    image: ghcr.io/linuxserver/openvpn-as
+    container_name: openvpn
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Helsinki
+    volumes:
+      - openvpn:/config
+    ports:
+      - 943:943
+      - 9443:9443
+      - 1194:1194/udp
     restart: unless-stopped
 volumes:
   mal_list_downloader:
@@ -124,3 +140,8 @@ volumes:
       type: "nfs"
       o: "addr=192.168.0.10,nolock,soft,rw"
       device: ":/mnt/HDD_4T_CH_120G/rancher/homeassistant"
+  openvpn:
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.0.10,nolock,soft,rw"
+      device: ":/mnt/HDD_4T_CH_120G/rancher/openvpn"
