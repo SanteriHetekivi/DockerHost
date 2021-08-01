@@ -100,8 +100,8 @@ services:
       - PGID=1000
       - TZ=Europe/Helsinki
     volumes:
-      - vpn_config:/config
-      - vpn_modules:/lib/modules
+      - vpn:/config
+      - /lib/modules:/lib/modules
     ports:
       - 51820:51820/udp
     sysctls:
@@ -143,13 +143,8 @@ volumes:
       type: "nfs"
       o: "addr=192.168.0.10,nolock,soft,rw"
       device: ":/mnt/HDD_4T_CH_120G/rancher/homeassistant"
-  vpn_config:
+  vpn:
     driver_opts:
       type: "nfs"
       o: "addr=192.168.0.10,nolock,soft,rw"
-      device: ":/mnt/HDD_4T_CH_120G/rancher/vpn/config"
-  vpn_modules:
-    driver_opts:
-      type: "nfs"
-      o: "addr=192.168.0.10,nolock,soft,rw"
-      device: ":/mnt/HDD_4T_CH_120G/rancher/vpn/modules"
+      device: ":/mnt/HDD_4T_CH_120G/rancher/vpn"
