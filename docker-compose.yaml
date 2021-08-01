@@ -88,21 +88,23 @@ services:
     depends_on:
       - "traefik"
     restart: unless-stopped
-  openvpn:
-    image: ghcr.io/linuxserver/openvpn-as
-    container_name: openvpn
+  vpn:
+    image: ghcr.io/linuxserver/wireguard
+    container_name: vpn
     cap_add:
       - NET_ADMIN
+      - SYS_MODULE
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Europe/Helsinki
     volumes:
-      - openvpn:/config
+      - vpn_config:/config
+      - vpn_modules:/lib/modules
     ports:
-      - 943:943
-      - 9443:9443
-      - 1194:1194/udp
+      - 51820:51820/udp
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
     restart: unless-stopped
 volumes:
   mal_list_downloader:
@@ -140,8 +142,13 @@ volumes:
       type: "nfs"
       o: "addr=192.168.0.10,nolock,soft,rw"
       device: ":/mnt/HDD_4T_CH_120G/rancher/homeassistant"
-  openvpn:
+  vpn_config:
     driver_opts:
       type: "nfs"
       o: "addr=192.168.0.10,nolock,soft,rw"
-      device: ":/mnt/HDD_4T_CH_120G/rancher/openvpn"
+      device: ":/mnt/HDD_4T_CH_120G/rancher/vpn/config"
+  vpn_modules:
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.0.10,nolock,soft,rw"
+      device: ":/mnt/HDD_4T_CH_120G/rancher/vpn/modules"
