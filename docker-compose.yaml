@@ -59,7 +59,7 @@ services:
     volumes:
       - "hetekivi_postgresql:/var/lib/postgresql/data/"
   hetekivi.com:
-    image: "santerihetekivi/hetekivi.com:latest"
+    image: "ghcr.io/santerihetekivi/hetekivi.com:master"
     container_name: "hetekivi.com"
     environment:
       - TZ=Europe/Helsinki
