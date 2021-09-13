@@ -89,62 +89,65 @@ services:
     depends_on:
       - "traefik"
     restart: unless-stopped
-  vpn:
-    image: ghcr.io/linuxserver/wireguard
-    container_name: vpn
-    cap_add:
-      - NET_ADMIN
-      - SYS_MODULE
+  plex:
+    image: "plexinc/pms-docker:latest"
+    container_name: "plex"
     environment:
-      - PUID=1000
-      - PGID=1000
       - TZ=Europe/Helsinki
+    env_file:
+      - plex.env
     volumes:
-      - vpn:/config
-      - /lib/modules:/lib/modules
-    ports:
-      - 51820:51820/udp
-    sysctls:
-      - net.ipv4.conf.all.src_valid_mark=1
-    restart: unless-stopped
+      - "plex_config:/config"
+      - "plex_transcode:/transcode"
+      - "plex_media:/data"
 volumes:
   mal_list_downloader:
     driver_opts:
       type: "nfs"
-      o: "addr=192.168.0.10,nolock,soft,rw"
+      o: "addr=192.168.0.11,nolock,soft,rw"
       device: ":/mnt/HDD_4T_CH_120G/rancher/mal_list_downloader"
   hetekivi_postgresql:
     driver_opts:
       type: "nfs"
-      o: "addr=192.168.0.10,nolock,soft,rw"
+      o: "addr=192.168.0.11,nolock,soft,rw"
       device: ":/mnt/HDD_4T_CH_120G/rancher/hetekivi/postgresql"
   hetekivi_tmp:
     driver_opts:
       type: "nfs"
-      o: "addr=192.168.0.10,nolock,soft,rw"
+      o: "addr=192.168.0.11,nolock,soft,rw"
       device: ":/mnt/HDD_4T_CH_120G/rancher/hetekivi/tmp"
   hetekivi_web:
     driver_opts:
       type: "nfs"
-      o: "addr=192.168.0.10,nolock,soft,rw"
+      o: "addr=192.168.0.11,nolock,soft,rw"
       device: ":/mnt/HDD_4T_CH_120G/rancher/hetekivi/web"
   pihole:
     driver_opts:
       type: "nfs"
-      o: "addr=192.168.0.10,nolock,soft,rw"
+      o: "addr=192.168.0.11,nolock,soft,rw"
       device: ":/mnt/HDD_4T_CH_120G/rancher/pihole/etc-pihole"
   pihole_dnsmasq:
     driver_opts:
       type: "nfs"
-      o: "addr=192.168.0.10,nolock,soft,rw"
+      o: "addr=192.168.0.11,nolock,soft,rw"
       device: ":/mnt/HDD_4T_CH_120G/rancher/pihole/etc-dnsmasq.d"
   homeassistant:
     driver_opts:
       type: "nfs"
-      o: "addr=192.168.0.10,nolock,soft,rw"
+      o: "addr=192.168.0.11,nolock,soft,rw"
       device: ":/mnt/HDD_4T_CH_120G/rancher/homeassistant"
-  vpn:
+  plex_config:
     driver_opts:
       type: "nfs"
-      o: "addr=192.168.0.10,nolock,soft,rw"
-      device: ":/mnt/HDD_4T_CH_120G/rancher/vpn"
+      o: "addr=192.168.0.11,nolock,soft,rw"
+      device: ":/mnt/HDD_4T_CH_120G/rancher/plex/config"
+  plex_transcode:
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.0.11,nolock,soft,rw"
+      device: ":/mnt/HDD_4T_CH_120G/rancher/plex/transcode"
+  plex_media:
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.0.11,nolock,soft,rw"
+      device: ":/mnt/HDD_4T_CH_120G/media"
