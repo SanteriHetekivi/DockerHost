@@ -41,8 +41,13 @@ services:
     command: node /app/start.js
     volumes:
       - mal_list_downloader:/app/data
+    environment:
+      - TZ=Europe/Helsinki
+      - HEADLESS=true
+      - DOWNLOAD_TIME=2000
+      - DEBUG=MALDownloader::*
     env_file:
-      - ./.env
+      - mal_list_downloader.env
   db:
     image: "postgres:13.3-buster"
     container_name: "db"
