@@ -107,6 +107,11 @@ services:
       - "plex_media:/data"
     ports:
       - "32400:32400/tcp"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.plex.rule=Host(`plex.${DOMAIN}`)"
+      - "traefik.http.routers.plex.entrypoints=web"
+      - "traefik.http.services.plex.loadbalancer.server.port=80"
 volumes:
   mal_list_downloader:
     driver_opts:
