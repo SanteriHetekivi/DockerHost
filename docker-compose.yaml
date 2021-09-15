@@ -95,10 +95,13 @@ services:
       - "traefik"
     restart: unless-stopped
   plex:
-    image: "plexinc/pms-docker:latest"
+    image: "linuxserver/plex:1.24.2.4973-2b1b51db9-ls74"
     container_name: "plex"
     environment:
       - TZ=Europe/Helsinki
+      - VERSION=latest
+      - PUID=1000
+      - PGID=1000
     env_file:
       - plex.env
     volumes:
