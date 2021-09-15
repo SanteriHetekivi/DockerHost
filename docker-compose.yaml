@@ -111,7 +111,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.plex.rule=Host(`plex.${DOMAIN}`)"
       - "traefik.http.routers.plex.entrypoints=web"
-      - "traefik.http.services.plex.loadbalancer.server.port=80"
+      - "traefik.http.services.plex.loadbalancer.server.port=32400"
 volumes:
   mal_list_downloader:
     driver_opts:
