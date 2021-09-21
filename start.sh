@@ -5,7 +5,7 @@ COMPOSE_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/doc
 # Start compose.
 docker-compose -f $COMPOSE_PATH up -d &&
 # Add to cron.
-echo "00 09 * * * docker-compose -f $COMPOSE_PATH up mal_list_downloader" > ./mycron &&
+echo "00 09 * * * /usr/local/bin/docker-compose -f $COMPOSE_PATH up mal_list_downloader" > ./mycron &&
 crontab ./mycron &&
 rm ./mycron &&
 echo "done"
