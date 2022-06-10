@@ -16,7 +16,7 @@ services:
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-    restart: always
+    restart: "always"
   # Blocking adds and DNS-server. 
   # pihole:
   #   image: "pihole/pihole:v5.8.1"
@@ -36,7 +36,7 @@ services:
   #     - "pihole_dnsmasq:/etc/dnsmasq.d/"
   #   depends_on:
   #     - "traefik"
-  #   restart: always
+  #   restart: "always"
   # Download MyAnimeList lists.
   myanimelist_downloader:
     image: "ghcr.io/santerihetekivi/myanimelist_downloader:main"
@@ -45,7 +45,7 @@ services:
       - "mal_list_downloader:/app/downloads"
       - "myanimelist_downloader.env:/app/.env"
     command: myanimelist_downloader --download-directory='/app/downloads' --env-file='/app/.env' --anime --manga
-    restart: no
+    restart: "no"
   # Database for hetekivi.com.
   db:
     image: "postgres:13.3-buster"
@@ -57,7 +57,7 @@ services:
       - PUID=1020
     volumes:
       - "hetekivi_postgresql:/var/lib/postgresql/data/"
-    restart: always
+    restart: "always"
   # Encoding and storing lists.
   hetekivi.com:
     image: "ghcr.io/santerihetekivi/hetekivi.com:master"
@@ -77,7 +77,7 @@ services:
     depends_on:
       - "traefik"
       - "db"
-    restart: always
+    restart: "always"
   # Home automation.
   homeassistant:
     image: "ghcr.io/home-assistant/home-assistant:2021.7.4"
@@ -95,7 +95,7 @@ services:
       - "homeassistant:/config"
     depends_on:
       - "traefik"
-    restart: always
+    restart: "always"
   # Media server.
   plex:
     image: "linuxserver/plex:1.26.2.5797-5bd057d2b-ls118"
@@ -118,7 +118,7 @@ services:
       - "traefik.http.routers.plex.rule=Host(`plex.${DOMAIN}`)"
       - "traefik.http.routers.plex.entrypoints=web"
       - "traefik.http.services.plex.loadbalancer.server.port=32400"
-    restart: always
+    restart: "always"
   # Media server statics.
   tautulli:
     image: "tautulli/tautulli"
@@ -135,7 +135,7 @@ services:
       - "traefik.http.routers.tautulli.rule=Host(`tautulli.${DOMAIN}`)"
       - "traefik.http.routers.tautulli.entrypoints=web"
       - "traefik.http.services.tautulli.loadbalancer.server.port=8181"
-    restart: always
+    restart: "always"
 # NFS volumes from NAS.
 volumes:
   mal_list_downloader:
