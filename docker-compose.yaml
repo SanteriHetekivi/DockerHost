@@ -43,7 +43,7 @@ services:
     container_name: myanimelist_downloader
     volumes:
       - "mal_list_downloader:/app/downloads"
-      - "myanimelist_downloader.env:/app/.env"
+      - "./myanimelist_downloader.env:/app/.env"
     command: myanimelist_downloader --download-directory='/app/downloads' --env-file='/app/.env' --anime --manga
     restart: "no"
   # Database for hetekivi.com.
