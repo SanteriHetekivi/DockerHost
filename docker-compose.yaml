@@ -1,5 +1,6 @@
 version: "3.9"
 services:
+  # Proxy to link services to subdomains.
   traefik:
     image: "traefik:v2.4.12"
     container_name: "traefik"
@@ -15,39 +16,37 @@ services:
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-    restart: unless-stopped
-  pihole:
-    image: "pihole/pihole:v5.8.1"
-    container_name: "pihole"
-    ports:
-      - "53:53/tcp"
-      - "53:53/udp"
-    environment:
-      - TZ=Europe/Helsinki
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.pihole.rule=Host(`pihole.${DOMAIN}`)"
-      - "traefik.http.routers.pihole.entrypoints=web"
-      - "traefik.http.services.pihole.loadbalancer.server.port=80"
+    restart: always
+  # Blocking adds and DNS-server. 
+  # pihole:
+  #   image: "pihole/pihole:v5.8.1"
+  #   container_name: "pihole"
+  #   ports:
+  #     - "53:53/tcp"
+  #     - "53:53/udp"
+  #   environment:
+  #     - TZ=Europe/Helsinki
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.pihole.rule=Host(`pihole.${DOMAIN}`)"
+  #     - "traefik.http.routers.pihole.entrypoints=web"
+  #     - "traefik.http.services.pihole.loadbalancer.server.port=80"
+  #   volumes:
+  #     - "pihole:/etc/pihole/"
+  #     - "pihole_dnsmasq:/etc/dnsmasq.d/"
+  #   depends_on:
+  #     - "traefik"
+  #   restart: always
+  # Download MyAnimeList lists.
+  myanimelist_downloader:
+    image: "ghcr.io/santerihetekivi/myanimelist_downloader:main"
+    container_name: myanimelist_downloader
     volumes:
-      - "pihole:/etc/pihole/"
-      - "pihole_dnsmasq:/etc/dnsmasq.d/"
-    depends_on:
-      - "traefik"
-    restart: unless-stopped
-  mal_list_downloader:
-    image: "ghcr.io/santerihetekivi/mal_list_downloader:master"
-    container_name: mal_list_downloader
-    command: node /app/start.js
-    volumes:
-      - mal_list_downloader:/app/data
-    environment:
-      - TZ=Europe/Helsinki
-      - HEADLESS=true
-      - DOWNLOAD_TIME=2000
-      - DEBUG=MALDownloader::*
-    env_file:
-      - mal_list_downloader.env
+      - "mal_list_downloader:/app/downloads"
+      - "myanimelist_downloader.env:/app/.env"
+    command: myanimelist_downloader --download-directory='/app/downloads' --env-file='/app/.env' --anime --manga
+    restart: no
+  # Database for hetekivi.com.
   db:
     image: "postgres:13.3-buster"
     container_name: "db"
@@ -58,6 +57,8 @@ services:
       - PUID=1020
     volumes:
       - "hetekivi_postgresql:/var/lib/postgresql/data/"
+    restart: always
+  # Encoding and storing lists.
   hetekivi.com:
     image: "ghcr.io/santerihetekivi/hetekivi.com:master"
     container_name: "hetekivi.com"
@@ -76,7 +77,8 @@ services:
     depends_on:
       - "traefik"
       - "db"
-    restart: unless-stopped
+    restart: always
+  # Home automation.
   homeassistant:
     image: "ghcr.io/home-assistant/home-assistant:2021.7.4"
     container_name: "homeassistant"
@@ -93,9 +95,10 @@ services:
       - "homeassistant:/config"
     depends_on:
       - "traefik"
-    restart: unless-stopped
+    restart: always
+  # Media server.
   plex:
-    image: "linuxserver/plex:1.24.2.4973-2b1b51db9-ls74"
+    image: "linuxserver/plex:1.26.2.5797-5bd057d2b-ls118"
     container_name: "plex"
     environment:
       - TZ=Europe/Helsinki
@@ -115,6 +118,8 @@ services:
       - "traefik.http.routers.plex.rule=Host(`plex.${DOMAIN}`)"
       - "traefik.http.routers.plex.entrypoints=web"
       - "traefik.http.services.plex.loadbalancer.server.port=32400"
+    restart: always
+  # Media server statics.
   tautulli:
     image: "tautulli/tautulli"
     container_name: "tautulli"
@@ -130,6 +135,8 @@ services:
       - "traefik.http.routers.tautulli.rule=Host(`tautulli.${DOMAIN}`)"
       - "traefik.http.routers.tautulli.entrypoints=web"
       - "traefik.http.services.tautulli.loadbalancer.server.port=8181"
+    restart: always
+# NFS volumes from NAS.
 volumes:
   mal_list_downloader:
     driver_opts:
